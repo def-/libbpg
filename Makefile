@@ -45,6 +45,7 @@ CFLAGS+=-DCONFIG_BPG_VERSION=\"$(shell cat VERSION)\"
 ifdef USE_JCTVC_HIGH_BIT_DEPTH
 CFLAGS+=-DRExt__HIGH_BIT_DEPTH_SUPPORT
 endif
+CFLAGS+=-fPIC
 
 # Emscriptem config
 EMLDFLAGS:=-s "EXPORTED_FUNCTIONS=['_bpg_decoder_open','_bpg_decoder_decode','_bpg_decoder_get_info','_bpg_decoder_start','_bpg_decoder_get_frame_duration','_bpg_decoder_get_line','_bpg_decoder_close','_malloc','_free']"
@@ -70,7 +71,7 @@ ifdef USE_EMCC
 PROGS+=bpgdec.js bpgdec8.js bpgdec8a.js
 endif
 
-all: $(PROGS)
+all: libbpg.so $(PROGS)
 
 LIBBPG_OBJS:=$(addprefix libavcodec/, \
 hevc_cabac.o  hevc_filter.o  hevc.o         hevcpred.o  hevc_refs.o\
@@ -154,6 +155,9 @@ BPGVIEW_LIBS:=-lSDL_image -lSDL $(LIBS)
 endif #!CONFIG_WIN32
 
 bpgenc.o: CFLAGS+=-Wno-unused-but-set-variable
+
+libbpg.so: $(LIBBPG_OBJS)
+	$(CC) $(LDFLAGS) -shared -o $@ $^
 
 libbpg.a: $(LIBBPG_OBJS) 
 	$(AR) rcs $@ $^
